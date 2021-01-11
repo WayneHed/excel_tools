@@ -58,7 +58,7 @@ class ExcelLoader:
         if self.sheets:
             self.loaded = True
         if not self.loaded:
-            _logger.error('Load Excel file failed: {}'.format(self.path))
+            _logger.error('Load {} failed.'.format(self.path))
 
     def _load_xls(self):
         """
@@ -82,7 +82,7 @@ class ExcelLoader:
                                                        current_sheet.row_values(row_idx, 0))))
             current_sheet_dict['contents'] = current_sheet_contents
             self.sheets.append(current_sheet_dict)
-        _logger.info('Loading {} successful, {} sheets loaded.'.format(self.path, wb.nsheets))
+        _logger.info('{} successfully loaded, {} sheets in total.'.format(self.path, wb.nsheets))
 
     def _load_xlsx(self):
         """
@@ -106,23 +106,26 @@ class ExcelLoader:
                 current_sheet_contents.append(dict(zip(current_sheet_dict['headers'], row)))
             current_sheet_dict['contents'] = current_sheet_contents
             self.sheets.append(current_sheet_dict)
-        _logger.info('Loading {} successful, {} sheets loaded.'.format(self.path, len(wb.sheetnames)))
+        _logger.info('{} successfully loaded, {} sheets in total.'.format(self.path, len(wb.sheetnames)))
 
     def dumps(self):
         """
         Convert ExcelClass into Json, and save the Json into a file in the same path with input Excel.
         :return:
         """
-        json_dict = dict()
-        json_dict['name'] = self.name
-        json_dict['path'] = self.path
-        json_dict['sheets'] = self.sheets
-        json_path = os.path.join(os.path.dirname(self.path), self.name[:self.name.rfind('.')]+'.json')
-        with open(file=json_path, mode='w', encoding='utf-8') as f:
-            f.write(json.dumps(json_dict, ensure_ascii=False))
-            f.flush()
-            f.close()
-        _logger.info('The input Excel file has been converted to Json, and dumped to {}'.format(json_path))
+        if self.loaded:
+            json_dict = dict()
+            json_dict['name'] = self.name
+            json_dict['path'] = self.path
+            json_dict['sheets'] = self.sheets
+            json_path = os.path.join(os.path.dirname(self.path), self.name[:self.name.rfind('.')] + '.json')
+            with open(file=json_path, mode='w', encoding='utf-8') as f:
+                f.write(json.dumps(json_dict, ensure_ascii=False))
+                f.flush()
+                f.close()
+            _logger.info('{} successfully loaded, dumped to {}'.format(self.path, json_path))
+        else:
+            _logger.error('Load {} failed, can not be dumped into Json.'.format(self.path))
 
 
 if __name__ == '__main__':
